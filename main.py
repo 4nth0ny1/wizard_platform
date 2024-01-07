@@ -8,23 +8,79 @@ SCREEN_HEIGHT = int(SCREEN_WIDTH * 0.8)
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption('Shooter')
 
+# set frame rate
+clock = pygame.time.Clock()
+FPS = 60
 
-x = 200
-y = 200
-scale = 3
-img = pygame.image.load('images/player/idle/0.png')
-img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
-rect = img.get_rect()
-rect.center = (x, y)
+# define player action variables
+moving_left = False
+moving_right = False
 
+# define colors
+BG = (144, 201, 120)
+
+def draw_bg():
+    screen.fill(BG)
+
+class Being(pygame.sprite.Sprite):
+    def __init__(self, char_type, x, y, scale, speed):
+        pygame.sprite.Sprite.__init__(self)
+        self.char_type = char_type
+        self.speed = speed
+        self.direction = 1
+        self.flip = True
+        img = pygame.image.load(f'images/{self.char_type}/idle/0.png')
+        self.img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
+        self.rect = self.img.get_rect()
+        self.rect.center = (x, y)
+
+    def move(self, moving_left, moving_right):
+        dx = 0
+        dy = 0
+
+        if moving_left:
+            dx = -self.speed
+            self.flip = False
+            self.direction = -1
+        if moving_right:
+            dx = self.speed
+            self.flip = True
+            self.direction = 1
+
+        self.rect.x += dx
+        self.rect.y += dy
+
+    def draw(self):
+        screen.blit(pygame.transform.flip(self.img, self.flip, False), self.rect)
+
+player = Being('player', 200, 200, 3, 5)
 run = True
 while run:
 
-    screen.blit(img, rect.center)
+    clock.tick(FPS)
+
+    draw_bg()
+
+    player.draw()
+
+    player.move(moving_left, moving_right)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_a:
+                moving_left = True
+            if event.key == pygame.K_d:
+                moving_right = True
+            if event.key == pygame.K_ESCAPE:
+                run = False
+
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_a:
+                moving_left = False
+            if event.key == pygame.K_d:
+                moving_right = False
 
     pygame.display.update()
 
